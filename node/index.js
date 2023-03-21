@@ -2,12 +2,7 @@
 
 // read env vars from .env file
 require('dotenv').config();
-const {
-  Configuration,
-  PlaidApi,
-  Products,
-  PlaidEnvironments,
-} = require('plaid');
+const { Configuration, PlaidApi, Products, PlaidEnvironments} = require('plaid');
 const util = require('util');
 const { v4: uuidv4 } = require('uuid');
 const express = require('express');
@@ -23,9 +18,9 @@ const PLAID_ENV = process.env.PLAID_ENV || 'sandbox';
 // PLAID_PRODUCTS is a comma-separated list of products to use when initializing
 // Link. Note that this list must contain 'assets' in order for the app to be
 // able to create and retrieve asset reports.
-const PLAID_PRODUCTS = (
-  process.env.PLAID_PRODUCTS || Products.Transactions
-).split(',');
+const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || Products.Transactions).split(
+  ',',
+);
 
 // PLAID_COUNTRY_CODES is a comma-separated list of countries for which users
 // will be able to select institutions from.
@@ -117,16 +112,8 @@ app.post('/api/create_link_token', function (request, response, next) {
         configs.android_package_name = PLAID_ANDROID_PACKAGE_NAME;
       }
       const createTokenResponse = await client.linkTokenCreate(configs);
-      prettyPrintResponse({
-        requestId: 'IC4QIt3ArULabu3',
-        expiration: '2023-03-15T05:05:45Z',
-        link_token: 'link-sandbox-f4b16241-8c5f-47b8-80cf-62838cd4ca25',
-      });
-      response.json({
-        requestId: 'IC4QIt3ArULabu3',
-        expiration: '2023-03-15T05:05:45Z',
-        link_token: 'link-sandbox-f4b16241-8c5f-47b8-80cf-62838cd4ca25',
-      });
+      prettyPrintResponse(createTokenResponse);
+      response.json(createTokenResponse.data);
     })
     .catch(next);
 });
@@ -204,13 +191,11 @@ app.post(
 // https://plaid.com/docs/#exchange-token-flow
 app.post('/api/set_access_token', function (request, response, next) {
   PUBLIC_TOKEN = request.body.public_token;
-  console.log('HERE IS THE PUBLIC TOKEN', PUBLIC_TOKEN);
-
   Promise.resolve()
     .then(async function () {
-      // const tokenResponse = await client.itemPublicTokenExchange({
-      //  public_token: PUBLIC_TOKEN,
-      // });
+      const tokenResponse = await client.itemPublicTokenExchange({
+        public_token: PUBLIC_TOKEN,
+      });
       prettyPrintResponse(tokenResponse);
       ACCESS_TOKEN = tokenResponse.data.access_token;
       ITEM_ID = tokenResponse.data.item_id;
@@ -261,7 +246,7 @@ app.get('/api/transactions', function (request, response, next) {
           access_token: ACCESS_TOKEN,
           cursor: cursor,
         };
-        const response = await client.transactionsSync(request);
+        const response = await client.transactionsSync(request)
         const data = response.data;
         // Add this page of results
         added = added.concat(data.added);
@@ -273,13 +258,10 @@ app.get('/api/transactions', function (request, response, next) {
         prettyPrintResponse(response);
       }
 
-      const compareTxnsByDateAscending = (a, b) =>
-        (a.date > b.date) - (a.date < b.date);
+      const compareTxnsByDateAscending = (a, b) => (a.date > b.date) - (a.date < b.date);
       // Return the 8 most recent transactions
-      const recently_added = [...added]
-        .sort(compareTxnsByDateAscending)
-        .slice(-8);
-      response.json({ latest_transactions: recently_added });
+      const recently_added = [...added].sort(compareTxnsByDateAscending).slice(-8);
+      response.json({latest_transactions: recently_added});
     })
     .catch(next);
 });
@@ -489,20 +471,17 @@ app.get('/api/payment', function (request, response, next) {
 });
 
 //TO-DO: This endpoint will be deprecated in the near future
-app.get(
-  '/api/income/verification/paystubs',
-  function (request, response, next) {
-    Promise.resolve()
-      .then(async function () {
-        const paystubsGetResponse = await client.incomeVerificationPaystubsGet({
-          access_token: ACCESS_TOKEN,
-        });
-        prettyPrintResponse(paystubsGetResponse);
-        response.json({ error: null, paystubs: paystubsGetResponse.data });
-      })
-      .catch(next);
-  },
-);
+app.get('/api/income/verification/paystubs', function (request, response, next) {
+  Promise.resolve()
+  .then(async function () {
+    const paystubsGetResponse = await client.incomeVerificationPaystubsGet({
+      access_token: ACCESS_TOKEN
+    });
+    prettyPrintResponse(paystubsGetResponse);
+    response.json({ error: null, paystubs: paystubsGetResponse.data})
+  })
+  .catch(next);
+})
 
 app.use('/api', function (error, request, response, next) {
   prettyPrintResponse(error.response);
