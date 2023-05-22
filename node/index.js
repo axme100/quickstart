@@ -20,6 +20,8 @@ const PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
 const PLAID_SECRET = process.env.PLAID_SECRET;
 const PLAID_ENV = process.env.PLAID_ENV || 'sandbox';
 
+const TEST_LINK_TOKEN = 'link-sandbox-334c1c49-c4aa-4076-b018-1025b350257d';
+
 // PLAID_PRODUCTS is a comma-separated list of products to use when initializing
 // Link. Note that this list must contain 'assets' in order for the app to be
 // able to create and retrieve asset reports.
@@ -118,14 +120,13 @@ app.post('/api/create_link_token', function (request, response, next) {
       }
       const createTokenResponse = await client.linkTokenCreate(configs);
       prettyPrintResponse({
-        requestId: 'IC4QIt3ArULabu3',
-        expiration: '2023-03-15T05:05:45Z',
-        link_token: 'link-sandbox-f4b16241-8c5f-47b8-80cf-62838cd4ca25',
+        requestId: 'g0IxYxIbAYGDHWt',
+        expiration: '2023-03-29T04:30:34Z',
       });
       response.json({
-        requestId: 'IC4QIt3ArULabu3',
-        expiration: '2023-03-15T05:05:45Z',
-        link_token: 'link-sandbox-f4b16241-8c5f-47b8-80cf-62838cd4ca25',
+        requestId: 'g0IxYxIbAYGDHWt',
+        expiration: '2023-03-29T04:30:34Z',
+        link_token: TEST_LINK_TOKEN,
       });
     })
     .catch(next);
